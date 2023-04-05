@@ -5,22 +5,21 @@ pd.set_option('display.max_columns', None)
 
 
 
-class TropicanaDataPipeLine:
+class TropicanaETL:
+    '''
+    class for extract, transform and load
+    '''
     def __init__(self, input_path: str, output_path: str, batch_id: str) -> None:
-        self.input_path = input_path
-        self.output_path = output_path
-        self.batch_id = batch_id
+        self.input_path = input_path #source location for csv
+        self.output_path = output_path #destination path for xl file
+        self.batch_id = batch_id #assign a batchid
+
 
     def extract(self):
         with open(self.input_path, mode="r") as file:
             data = file.readlines()
 
         return data
-
-    def describe_output(self, raw_data):
-        pass
-        # print(raw_data.shape)
-        # print(raw_data.columns)+
 
     def transform(self, raw_data):
         df = pd.DataFrame(raw_data)
@@ -57,7 +56,7 @@ class TropicanaDataPipeLine:
                     row_data_list = row.split('"')
                     # print(idx, row_data_list)
                     if len(row_data_list) == 3:
-                        class_ = row_data_list[1]  # Get class
+                        class_ = row_data_list[1]  # Get class eg Administration
                     if len(row_data_list) == 5:
                         type_ = row_data_list[3]  # get type Revenue or Expense
                     if len(row_data_list) == 9:
@@ -105,11 +104,10 @@ class TropicanaDataPipeLine:
         data.to_excel(file)  # outfile to excel
 
 if __name__ == '__main__':
-    file = TropicanaDataPipeLine(f"input/2302 Program report_03042023.csv", "output", batch_id=2302) #batch_id needs \
+    file = TropicanaETL(f"input/2302 Program report_03042023.csv", "output", batch_id=2302) #batch_id needs \
     # to be added
     data = file.extract()  # get data from source
     cleaned = file.clean(raw_data=data)  # clean file
     transformed = file.transform(cleaned)  # add transformations
-    file.describe_output(transformed)  # optional, describe the output
     file.load_data_to_xl(transformed)  # output to an excel file
     file.load_data_to_db(transformed) # output to database, connections string can be modified.
